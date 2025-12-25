@@ -30,7 +30,7 @@ jobs:
       - name: Push to mirror repo
         run: |
           cd repo.git
-          git push --mirror git@github.com:getvictor/fleet-mirror.git
+          git push git@github.com:getvictor/fleet-mirror.git 'refs/heads/*:refs/heads/*' 'refs/tags/*:refs/tags/*' --force
 
       - name: Checkout automation repo
         uses: actions/checkout@v4
