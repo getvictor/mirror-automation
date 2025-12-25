@@ -2,7 +2,7 @@ name: Mirror upstream repository
 
 on:
   schedule:
-    - cron: "*/15 * * * *"   # every 15 minutes
+    - cron: "*/30 * * * *"   # every 30 minutes
   workflow_dispatch:
 
 permissions:
@@ -23,9 +23,23 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.MIRROR_SSH_KEY }}
 
-      - name: Clone upstream as mirror
+      - name: Restore cached mirror
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: repo.git
+          key: mirror-repo
+
+      - name: Clone or fetch upstream
         run: |
-          git clone --mirror git@github.com:fleetdm/fleet.git repo.git
+          if [ -d "repo.git" ]; then
+            echo "Fetching updates..."
+            cd repo.git
+            git fetch --prune origin '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*'
+          else
+            echo "Cloning fresh..."
+            git clone --mirror git@github.com:fleetdm/fleet.git repo.git
+          fi
 
       - name: Push to mirror repo
         run: |
@@ -43,4 +57,3 @@ jobs:
           git add .keepalive
           git commit -m "keepalive" || true
           git push || true
-
