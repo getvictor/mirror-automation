@@ -27,23 +27,23 @@ jobs:
         id: cache
         uses: actions/cache@v4
         with:
-          path: repo.git
+          path: ${{ runner.temp }}/repo.git
           key: mirror-repo
 
       - name: Clone or fetch upstream
         run: |
-          if [ -d "repo.git" ]; then
+          if [ -d "${{ runner.temp }}/repo.git" ]; then
             echo "Fetching updates..."
-            cd repo.git
+            cd "${{ runner.temp }}/repo.git"
             git fetch --prune origin '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*'
           else
             echo "Cloning fresh..."
-            git clone --mirror git@github.com:fleetdm/fleet.git repo.git
+            git clone --mirror git@github.com:fleetdm/fleet.git "${{ runner.temp }}/repo.git"
           fi
 
       - name: Push to mirror repo
         run: |
-          cd repo.git
+          cd "${{ runner.temp }}/repo.git"
           git push git@github.com:getvictor/fleet-mirror.git 'refs/heads/*:refs/heads/*' 'refs/tags/*:refs/tags/*' --force
 
       - name: Checkout automation repo
